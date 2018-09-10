@@ -1,0 +1,6 @@
+node_modules
+.*.swp
+npm-debug.log
+tweet.js
+deleted.js
+.env
