@@ -11,6 +11,15 @@ Due to twitter's API [rate limit](https://help.twitter.com/en/rules-and-policies
 - You need a valid Twitter developer credentials in the form of a set of consumer and access tokens/keys [(link)](https://apps.twitter.com/). You will also need to grant write permission to your application.
 -  Request your twitter data from Twitter [(link)](https://twitter.com/settings/your_twitter_data). You will see a download link once you have requested the data, this may take a some time especially if you have a lot of twitter history.
 - Extract your twitter data and copy `tweet.js` into the scripts working directory
+- Create a `.env` file in the project directory and complete the following with your twitter app tokens/keys obtained earlier
+
+    ```
+    TWITTER_CONSUMER_KEY=**your key**
+    TWITTER_CONSUMER_SECRET=**your secret**
+    TWITTER_ACCESS_TOKEN_KEY=**your token key**
+    TWITTER_ACCESS_TOKEN_SECRET=**your token secret**
+    ```
+
 - Execute the script 
     - `node index.js`
 - IDs of deleted tweets will be written to `deleted.js`
