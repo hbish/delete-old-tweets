@@ -20,10 +20,14 @@ Due to twitter's API [rate limit](https://help.twitter.com/en/rules-and-policies
     TWITTER_ACCESS_TOKEN_SECRET=**your token secret**
     ```
 
-- Execute the script 
-    - `node index.js`
+- Execute the script (below will delete 100 tweets before 2011-01-01)
+    - `node index.js -d 2011-01-01`
+        - `-d` - cutoff date in yyyy-mm-dd format
+        - `-n` - number of tweets to delete (optional, default to 100)
 - IDs of deleted tweets will be written to `deleted.js`
 - Rerun the script to continue the next batch of tweets
+
+To see all of the scripts options, please run `node index.js -h`
 
 ## Contributors
 Originally authored by [@hbish](http://github.com/hbish)
