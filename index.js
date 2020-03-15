@@ -34,8 +34,8 @@ console.log(`Deleting tweets before ${argv.d}`);
 console.log(`Found ${tweetData.length} tweets in total`);
 
 for (var tweet in tweetData) {
-    ({ id_str } = tweetData[tweet]);
-    var created_at = new Date(tweetData[tweet].created_at);
+    var id_str = tweetData[tweet].tweet.id;
+    var created_at = new Date(tweetData[tweet].tweet.created_at);
 
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
         console.log(`Deleting tweet id: ${id_str}, created at ${created_at}`)
