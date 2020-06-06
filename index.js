@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-var argv = require('yargs')
+const argv = require('yargs')
     .usage('Usage: $0 [options]')
     .alias('d', 'date')
     .nargs('d', 1)
@@ -12,13 +12,13 @@ var argv = require('yargs')
     .demand(['d'])
     .help('h')
     .alias('h', 'help')
-    .argv
+    .argv;
 
-var fs = require('fs');
-var Twitter = require('twitter');
+const fs = require('fs');
+const Twitter = require('twitter');
 
 console.log("Reading tweet.js file");
-var tweetData
+let tweetData;
 try {
     tweetData = JSON.parse(readJson('tweet.js'));
 } catch (e) {
@@ -26,17 +26,17 @@ try {
     process.exit();
 }
 
-var results = [];
+let results = [];
 try {
     results = JSON.parse(readJson('deleted.js'));
 } catch (e) {
     writeResult(results)
 }
 
-var count = 0;
-var cutOffDate = Date.parse(argv.d);
+let count = 0;
+const cutOffDate = Date.parse(argv.d);
 
-var client = new Twitter({
+const client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
@@ -46,21 +46,22 @@ var client = new Twitter({
 console.log(`Deleting tweets before ${argv.d}`);
 console.log(`Found ${tweetData.length} tweets in total`);
 
-for (var tweet in tweetData) {
-    var id_str = tweetData[tweet].tweet.id;
-    var created_at = new Date(tweetData[tweet].tweet.created_at);
+tweetData.forEach(({tweet}) => {
+    const id_str = tweet.id;
+    const created_at = new Date(tweet.created_at);
 
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
-        console.log(`Deleting tweet id: ${id_str}, created at ${created_at}`)
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
             if (error) {
-                console.log(error);
+                console.log(`Error deleting tweet id: ${id_str}, created at ${created_at}`)
+            } else {
+                results.push(id_str);
+                count++;
+                console.log(`Deleted tweet id: ${id_str}, created at ${created_at}`)
             }
-            count++;
         });
-        results.push(id_str);
     }
-}
+});
 
 writeResult(results);
 console.log("Finish deleting tweets");
@@ -73,7 +74,7 @@ function readJson(filename) {
 }
 
 function writeResult(results) {
-    var file = fs.createWriteStream('deleted.js');
+    const file = fs.createWriteStream('deleted.js');
     file.on('error', function (err) { /* error handling */
     });
     file.write(JSON.stringify(results));
