@@ -18,8 +18,21 @@ var fs = require('fs');
 var Twitter = require('twitter');
 
 console.log("Reading tweet.js file");
-var tweetData = JSON.parse(readJson('tweet.js'));
-var results = JSON.parse(readJson('deleted.js'));
+var tweetData
+try {
+    tweetData = JSON.parse(readJson('tweet.js'));
+} catch (e) {
+    console.log("tweet.js not found or invalid format");
+    process.exit();
+}
+
+var results = [];
+try {
+    results = JSON.parse(readJson('deleted.js'));
+} catch (e) {
+    writeResult(results)
+}
+
 var count = 0;
 var cutOffDate = Date.parse(argv.d);
 
@@ -42,7 +55,7 @@ for (var tweet in tweetData) {
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
             if (error) {
                 console.log(error);
-            };
+            }
             count++;
         });
         results.push(id_str);
@@ -61,7 +74,8 @@ function readJson(filename) {
 
 function writeResult(results) {
     var file = fs.createWriteStream('deleted.js');
-    file.on('error', function (err) { /* error handling */ });
+    file.on('error', function (err) { /* error handling */
+    });
     file.write(JSON.stringify(results));
     file.end();
 }
