@@ -22,7 +22,7 @@ let tweetData;
 try {
     tweetData = JSON.parse(readJson('tweet.js'));
 } catch (e) {
-    console.log("tweet.js not found or invalid format");
+    console.error("tweet.js not found or invalid format", e);
     process.exit();
 }
 
@@ -53,7 +53,7 @@ tweetData.forEach(({tweet}) => {
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
             if (error) {
-                console.log(`Error deleting tweet id: ${id_str}, created at ${created_at}`)
+                console.error(`Error deleting tweet id: ${id_str}, created at ${created_at}`, error)
             } else {
                 results.push(id_str);
                 count++;
