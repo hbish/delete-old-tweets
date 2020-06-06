@@ -53,7 +53,12 @@ tweetData.forEach(({tweet}) => {
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
             if (error) {
-                console.error(`Error deleting tweet id: ${id_str}, created at ${created_at}`, error)
+                const {code, message} = error[0]
+                if (code === 144) {
+                    results.push(id_str);
+                } else {
+                    console.error(`Error deleting tweet id: ${id_str}, created at ${created_at}, reason: ${message}`)
+                }
             } else {
                 results.push(id_str);
                 count++;
