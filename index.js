@@ -53,7 +53,7 @@ tweetData.forEach(({tweet}) => {
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
             if (error) {
-                console.log(`Error received: ${error}`)
+                console.log(`Error received: ${JSON.stringify(error)}`)
                 const {code, message} = error[0]
                 if (code === 144) {
                     results.push(id_str);
