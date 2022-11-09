@@ -76,7 +76,7 @@ function readJson(filename) {
     return fs.readFileSync(`./${filename}`, 'utf8', function (err, data) {
         if (err) throw err;
         return data;
-    }).replace(/window.YTD.tweet.part0 = /g, '');
+    }).replace(/window.YTD.tweets.part0 = /g, '');
 }
 
 function writeResult(results) {
