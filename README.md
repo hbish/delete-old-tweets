@@ -1,16 +1,23 @@
 # delete-old-tweets
 
-A simple script that deletes your old tweets based on a given cut off
+A simple utility script that deletes your old tweets based on a given cut off
 date.
+
+Motivation for creating this utility is on my [blog post](https://hbish.com/deleting-old-tweets/).
+
+If you found this to be useful, please give it a star.
+
+## 🛆 Read before proceeding
 
 Due to twitter's API
 [rate limit](https://help.twitter.com/en/rules-and-policies/twitter-limits),
-the script has been limited to 100 deletes per execution. There is also
+by default, a limit of 100 deletions has been set when you execute the script. There is also
 a hard limit of 2400 updates to tweets per day. _Please be aware of the
 rate limits, otherwise your account may be suspended._
 
 ## Installation
 
+- Tested on NodeJs v18.x
 - `npm install`
 
 ## Quick Start
@@ -22,7 +29,7 @@ rate limits, otherwise your account may be suspended._
 - You need a valid Twitter developer credentials in the form of a set of
   consumer and access tokens/keys [(link)](https://apps.twitter.com/).
   You will also need to grant write permission to your application.
-- Extract your twitter data and copy `data/tweet.js` into the scripts
+- Extract your twitter data and copy `data/tweets.js` into the scripts
   working directory
 - Copy the sample `.env` file `cp .env.sample .env`
 - Edit the `.env` file and replace the placeholders with your twitter

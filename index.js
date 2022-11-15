@@ -72,6 +72,12 @@ tweetData.forEach(({tweet}) => {
 writeResult(results);
 console.log("Finish deleting tweets");
 
+/**
+ * Reads the JSON file (tweets.js) without variable name
+ *
+ * @param filename
+ * @returns {string}
+ */
 function readJson(filename) {
     return fs.readFileSync(`./${filename}`, 'utf8', function (err, data) {
         if (err) throw err;
@@ -79,6 +85,11 @@ function readJson(filename) {
     }).replace(/window.YTD.tweets.part0 = /g, '');
 }
 
+/**
+ * Output script results to system
+ *
+ * @param results
+ */
 function writeResult(results) {
     const file = fs.createWriteStream('deleted.js');
     file.on('error', function (err) { /* error handling */
