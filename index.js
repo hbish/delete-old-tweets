@@ -35,6 +35,7 @@ try {
 
 let count = 0;
 const cutOffDate = Date.parse(argv.d);
+    
 
 const client = new Twitter({
     consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -52,8 +53,7 @@ tweetData.forEach(({tweet}) => {
 
     if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
         client.post(`statuses/destroy/${id_str}.json`, function (error) {
-            if (error) {
-                console.log(`Error received: ${JSON.stringify(error)}`)
+            if (error && error.length > 0) {
                 const {code, message} = error[0]
                 if (code === 144) {
                     results.push(id_str);
