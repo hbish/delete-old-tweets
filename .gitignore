@@ -5,3 +5,6 @@ tweet.js
 deleted.js
 .env
 .idea
+tweets.js
+ .DS_Store
+ package-lock.json

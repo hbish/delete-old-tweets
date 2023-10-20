@@ -1,99 +1,102 @@
-require('dotenv').config();
+require("dotenv").config();
+const Twit = require("twit");
+const fs = require("fs");
+const readline = require("readline");
+const fsPromises = fs.promises;
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const RATE_LIMIT_DELAY = 15 * 60 * 1000; // 15 minutes
 
-const argv = require('yargs')
-    .usage('Usage: $0 [options]')
-    .alias('d', 'date')
-    .nargs('d', 1)
-    .describe('d', 'date used to delete tweets in yyyy-mm-dd')
-    .alias('n', 'number')
-    .nargs('n', 1)
-    .describe('n', 'number of tweets to delete')
-    .default('n', 100)
-    .demand(['d'])
-    .help('h')
-    .alias('h', 'help')
-    .argv;
+// Parse arguments
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("Usage: $0 -d [date]")
+  .nargs("d", 1)
+  .describe("d", "Delete all tweets before this date (format: YYYY-MM-DD)")
+  .demandOption(["d"])
+  .help("h")
+  .alias("h", "help").argv;
 
-const fs = require('fs');
-const Twitter = require('twitter');
-
-console.log("Reading tweet.js file");
-let tweetData;
-try {
-    tweetData = JSON.parse(readJson('tweet.js'));
-} catch (e) {
-    console.error("tweet.js not found or invalid format", e);
-    process.exit();
-}
-
-let results = [];
-try {
-    results = JSON.parse(readJson('deleted.js'));
-} catch (e) {
-    writeResult(results)
-}
-
-let count = 0;
-const cutOffDate = Date.parse(argv.d);
-    
-
-const client = new Twitter({
-    consumer_key: process.env.TWITTER_CONSUMER_KEY,
-    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+const T = new Twit({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
-console.log(`Deleting tweets before ${argv.d}`);
-console.log(`Found ${tweetData.length} tweets in total`);
+const handle = process.env.TWITTER_USERNAME;
+const cutoffDate = new Date(argv.d).getTime();
+const suppress404 = process.env.SUPPRESS_404 === "true";
 
-tweetData.forEach(({tweet}) => {
-    const id_str = tweet.id;
-    const created_at = new Date(tweet.created_at);
+async function deleteOldTweets() {
+  console.log("Reading tweets.js file...");
+  const tweetFile = await fsPromises.readFile("./tweets.js", "utf8");
+  const tweets = JSON.parse(
+    tweetFile.replace(/window\.YTD\.tweets\.part0 = /g, "")
+  );
 
-    if (!results.includes(id_str) && count < argv.n && created_at < cutOffDate) {
-        client.post(`statuses/destroy/${id_str}.json`, function (error) {
-            if (error && error.length > 0) {
-                const {code, message} = error[0]
-                if (code === 144) {
-                    results.push(id_str);
-                } else {
-                    console.error(`Error deleting tweet id: ${id_str}, created at ${created_at}, reason: ${message}`)
-                }
-            } else {
-                results.push(id_str);
-                count++;
-                console.log(`Deleted tweet id: ${id_str}, created at ${created_at}`)
+  console.log(`Loaded ${tweets.length} tweets from tweets.js`);
+
+  let deletedTweets = [];
+  if (fs.existsSync("./deleted.js")) {
+    let deletedFile = await fsPromises.readFile("./deleted.js", "utf8");
+    deletedTweets = JSON.parse(deletedFile);
+    console.log(
+      `Loaded ${deletedTweets.length} already deleted tweets from deleted.js`
+    );
+  }
+
+  const tweetsToDelete = tweets.filter((tweet) => {
+    const created_at = new Date(tweet.tweet.created_at).getTime();
+    const tweetUrl = `https://twitter.com/${handle}/status/${tweet.tweet.id_str}`;
+    return created_at < cutoffDate && !deletedTweets.includes(tweetUrl);
+  });
+
+  const tweetsExcluded = tweets.filter((tweet) => {
+    const created_at = new Date(tweet.tweet.created_at).getTime();
+    return created_at >= cutoffDate;
+  });
+
+  console.log(`Found ${tweetsToDelete.length} tweets to delete`);
+  console.log(`Excluded ${tweetsExcluded.length} recent tweets`);
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  rl.question(
+    "Press any key to start deleting. Ctrl+C to cancel.",
+    async (answer) => {
+      rl.close();
+
+      for (const tweet of tweetsToDelete) {
+        const tweetUrl = `https://twitter.com/${handle}/status/${tweet.tweet.id_str}`;
+        try {
+          await T.post("statuses/destroy/:id", { id: tweet.tweet.id_str });
+          console.log(`Deleted tweet: ${tweetUrl}`);
+        } catch (e) {
+          if (e && (e.code === 144 || e.code === 403 || e.code === 34)) {
+            // Tweet does not exist, is forbidden, or the page does not exist, add to deletedTweets.
+            if (!suppress404) {
+              console.log("Tweet could not be accessed, skipping...");
             }
-        });
+            deletedTweets.push(tweetUrl);
+          } else if (e && e.code === 88) {
+            // WAIT_TIME if rate limit exceeded.
+            console.log("Rate limit exceeded. Waiting 15 minutes...");
+            await delay(RATE_LIMIT_DELAY);
+          } else {
+            console.error(`Failed to delete tweet: ${tweetUrl}. Error:`, e);
+          }
+        }
+        await fsPromises.writeFile(
+          "./deleted.js",
+          JSON.stringify(deletedTweets),
+          "utf8"
+        );
+      }
+      console.log("Finished deleting tweets.");
     }
-});
-
-writeResult(results);
-console.log("Finish deleting tweets");
-
-/**
- * Reads the JSON file (tweets.js) without variable name
- *
- * @param filename
- * @returns {string}
- */
-function readJson(filename) {
-    return fs.readFileSync(`./${filename}`, 'utf8', function (err, data) {
-        if (err) throw err;
-        return data;
-    }).replace(/window.YTD.tweets.part0 = /g, '');
+  );
 }
 
-/**
- * Output script results to system
- *
- * @param results
- */
-function writeResult(results) {
-    const file = fs.createWriteStream('deleted.js');
-    file.on('error', function (err) { /* error handling */
-    });
-    file.write(JSON.stringify(results));
-    file.end();
-}
+deleteOldTweets();
