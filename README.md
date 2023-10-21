@@ -3,11 +3,11 @@
 A simple utility script that deletes your old tweets based on a given cut off
 date.
 
-Motivation for creating this utility is on my [blog post](https://hbish.com/deleting-old-tweets/).
+I originally forked the [delete-old-tweets](https://github.com/hbish/delete-old-tweets) repo, but then basically rewrote the whole thing.
 
 If you found this to be useful, please give it a star.
 
-## 🛆 Read before proceeding
+## Read before proceeding
 
 Due to twitter's API
 [rate limit](https://help.twitter.com/en/rules-and-policies/twitter-limits),
@@ -17,7 +17,7 @@ rate limits, otherwise your account may be suspended._
 
 ## Installation
 
-- Tested on NodeJs v18.x
+- Tested on NodeJs v20.x
 - `npm install`
 
 ## Quick Start
@@ -40,6 +40,8 @@ rate limits, otherwise your account may be suspended._
   TWITTER_CONSUMER_SECRET=**your secret**
   TWITTER_ACCESS_TOKEN_KEY=**your token key**
   TWITTER_ACCESS_TOKEN_SECRET=**your token secret**
+  TWITTER_USERNAME=**your twitter username**
+  SUPPRESS_404=false
   ```
 
 - Execute the script (below will delete 100 tweets before 2011-01-01)
@@ -53,8 +55,4 @@ To see all of the scripts options, please run `node index.js -h`
 
 ## Contributors
 
-Originally authored by [@hbish](http://github.com/hbish)
-
-Special thanks to
-[Twitter for Node.js](https://www.npmjs.com/package/twitter) for the
-awesome twitter client.
+Originally authored by [@hbish](http://github.com/hbish). Significantly changed by [@WadeWegner](https://github.com/wadewegner).
