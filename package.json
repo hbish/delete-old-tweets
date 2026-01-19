@@ -6,11 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "ben shi",
+  "author": "Wade Wegner",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.1",
-    "twitter": "^1.7.1",
+    "twit": "^2.2.11",
     "yargs": "^17.5.1"
   }
 }
